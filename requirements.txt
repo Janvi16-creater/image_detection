@@ -1,0 +1,15 @@
+torch
+torchvision
+transformers
+pillow
+opencv-python
+numpy
+pandas
+tqdm
+PyYAML
+imagehash
+faiss-cpu
+easyocr
+scikit-learn
+matplotlib
+
