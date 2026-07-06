@@ -1,0 +1,52 @@
+[
+    {
+        "filename": "1000012535.jpg",
+        "category": "camera_photo",
+        "confidence": 0.5824,
+        "blur": "sharp",
+        "noise": "very_clean",
+        "exposure": "properly_exposed",
+        "resolution": "Full HD",
+        "status": "Accepted"
+    },
+    {
+        "filename": "1000378831.jpg",
+        "category": "screenshot",
+        "confidence": 0.5035,
+        "blur": "sharp",
+        "noise": "very_clean",
+        "exposure": "underexposed",
+        "resolution": "Low Resolution",
+        "status": "Rejected"
+    },
+    {
+        "filename": "1000378939.jpg",
+        "category": "screenshot",
+        "confidence": 0.6764,
+        "blur": "extremely_blurry",
+        "noise": "very_clean",
+        "exposure": "underexposed",
+        "resolution": "Low Resolution",
+        "status": "Rejected"
+    },
+    {
+        "filename": "1000378940.jpg",
+        "category": "wallpaper",
+        "confidence": 0.5646,
+        "blur": "sharp",
+        "noise": "low_noise",
+        "exposure": "properly_exposed",
+        "resolution": "Low Resolution",
+        "status": "Accepted"
+    },
+    {
+        "filename": "Soft on Hair, Big on Style..png",
+        "category": "widget",
+        "confidence": 0.6255,
+        "blur": "sharp",
+        "noise": "very_clean",
+        "exposure": "properly_exposed",
+        "resolution": "Low Resolution",
+        "status": "Accepted"
+    }
+]

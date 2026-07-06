@@ -37,3 +37,5 @@ class DuplicateManager:
         self.phashes[phash] = image_path
 
         return False, "Unique"
+    
+duplicate_manager = DuplicateManager()

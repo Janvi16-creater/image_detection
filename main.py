@@ -1,60 +1,71 @@
 """
-Main Pipeline
+Main Entry Point
+
+Workflow:
+
+1. Create output folders
+2. Load dataset
+3. Run image processing pipeline
+4. Generate reports
 """
 
-from config import *
-from preprocessing.image_loader import load_images
-from preprocessing.validator import validate_image
-from duplicate_detection.duplicate_manager import DuplicateManager
-from utils.file_manager import move_file
-from utils.logger import get_logger
+from config import (
+    RAW_DATASET,
+    OUTPUT_FOLDERS,
+)
+
+from pipeline.image_pipeline import ImagePipeline
 
 
-logger = get_logger()
-
-
-def create_output_dirs():
+def create_output_directories():
+    """
+    Create all required output directories.
+    """
 
     for folder in OUTPUT_FOLDERS:
-
-        folder.mkdir(parents=True, exist_ok=True)
+        folder.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
 
 def main():
 
-    create_output_dirs()
+    print("=" * 60)
+    print("        IMAGE DATASET CLEANING PIPELINE")
+    print("=" * 60)
 
-    duplicate_manager = DuplicateManager()
+    create_output_directories()
 
-    for image in load_images(RAW_DATASET):
+    if not RAW_DATASET.exists():
 
-        logger.info(f"Processing {image.name}")
+        print(f"\nDataset not found:\n{RAW_DATASET}")
 
-        valid, reason = validate_image(image)
+        return
 
-        if not valid:
+    pipeline = ImagePipeline(
+        dataset_path=RAW_DATASET
+    )
 
-            logger.warning(reason)
+    pipeline.run()
 
-            move_file(image, CORRUPTED_DIR)
-
-            continue
-
-        duplicate, reason = duplicate_manager.is_duplicate(image)
-
-        if duplicate:
-
-            logger.info(reason)
-
-            move_file(image, DUPLICATE_DIR)
-
-            continue
-
-        logger.info("Image Passed Phase 1")
-
-        move_file(image, CLEAN_DIR)
+    print("\n")
+    print("=" * 60)
+    print("Pipeline Completed Successfully.")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
 
-    main()
+    try:
+
+        main()
+
+    except KeyboardInterrupt:
+
+        print("\nPipeline Interrupted by User.")
+
+    except Exception as error:
+
+        print("\nUnexpected Error:")
+        print(error)

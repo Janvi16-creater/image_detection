@@ -1,0 +1,6 @@
+filename,category,confidence,blur,noise,exposure,resolution,status
+1000012535.jpg,camera_photo,0.5824,sharp,very_clean,properly_exposed,Full HD,Accepted
+1000378831.jpg,screenshot,0.5035,sharp,very_clean,underexposed,Low Resolution,Rejected
+1000378939.jpg,screenshot,0.6764,extremely_blurry,very_clean,underexposed,Low Resolution,Rejected
+1000378940.jpg,wallpaper,0.5646,sharp,low_noise,properly_exposed,Low Resolution,Accepted
+"Soft on Hair, Big on Style..png",widget,0.6255,sharp,very_clean,properly_exposed,Low Resolution,Accepted

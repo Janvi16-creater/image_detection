@@ -1,0 +1,10 @@
+total_images: 5
+accepted: 3
+rejected: 2
+categories: {'camera_photo': 1, 'screenshot': 2, 'wallpaper': 1, 'widget': 1}
+blurry: 1
+noisy: 0
+overexposed: 0
+underexposed: 2
+low_resolution: 4
+average_confidence: 0.59
