@@ -1,202 +1,130 @@
 """
 Decision Engine
 
-This module combines all detector outputs and
-returns the final image category.
+Combines outputs from OpenCV detectors.
 
-Priority:
-1. Screenshot
-2. Document
-3. Widget
-4. Wallpaper
-5. Camera Photo
+If confidence is high enough,
+OpenCV result is accepted.
+
+Otherwise the classifier will
+invoke Hugging Face.
 """
-
-from classification.detectors.document_detector import document_detector
-from classification.detectors.screenshot_detector import screenshot_detector
-from classification.detectors.wallpaper_detector import wallpaper_detector
-from classification.detectors.widget_detector import widget_detector
 
 
 class DecisionEngine:
 
     def __init__(self):
 
-        self.threshold = 0.60
+        self.ai_threshold = 0.75
 
-    def classify(
+    # ---------------------------------------------------------
+
+    def decide(
         self,
-        ai_result,
-        features,
-        ocr_result,
+        wallpaper_result,
+        camera_result,
+        screenshot_result,
+        widget_result=None,
+        document_result=None,
     ):
-        """
-        Returns
-        -------
-        dict
 
-        {
-            category,
-            confidence,
-            detector_scores,
-            reasons
-        }
-        """
+        scores = {
 
-        screenshot = screenshot_detector.verify(
-            ai_result,
-            features,
-            ocr_result,
-        )
+            "wallpaper": wallpaper_result["confidence"],
 
-        wallpaper = wallpaper_detector.verify(
-            ai_result,
-            features,
-            ocr_result,
-        )
+            "camera": camera_result["confidence"],
 
-        widget = widget_detector.verify(
-            ai_result,
-            features,
-            ocr_result,
-        )
+            "screenshot": screenshot_result["confidence"],
 
-        document = document_detector.verify(
-            ai_result,
-            features,
-            ocr_result,
-        )
+            "widget": 0.0,
 
-        detector_results = {
-
-            "screenshot": screenshot,
-
-            "wallpaper": wallpaper,
-
-            "widget": widget,
-
-            "document": document,
+            "document": 0.0
 
         }
 
-        # --------------------------------------------------
-        # Pick detector having highest confidence
-        # --------------------------------------------------
+        # ---------------------------------------
+        # Widget
+        # ---------------------------------------
 
-        best_category = None
+        if widget_result is not None:
 
-        best_result = None
+            scores["widget"] = widget_result["confidence"]
 
-        best_score = 0
+        # ---------------------------------------
+        # Document
+        # ---------------------------------------
 
-        for category, result in detector_results.items():
+        if document_result is not None:
 
-            if result["confidence"] > best_score:
+            scores["document"] = document_result["confidence"]
 
-                best_score = result["confidence"]
+        # ---------------------------------------
+        # Highest confidence
+        # ---------------------------------------
 
-                best_category = category
+        category = max(scores, key=scores.get)
 
-                best_result = result
+        confidence = scores[category]
 
-        # --------------------------------------------------
-        # If detector confidence is sufficient
-        # --------------------------------------------------
+        # ---------------------------------------
+        # Should AI be used?
+        # ---------------------------------------
 
-        if best_score >= self.threshold:
-
-            return {
-
-                "category": best_category,
-
-                "confidence": round(best_score, 4),
-
-                "reason": best_result["reasons"],
-
-                "detector_scores": {
-
-                    name: round(
-                        value["confidence"],
-                        4,
-                    )
-
-                    for name, value in detector_results.items()
-
-                }
-
-            }
-
-        # --------------------------------------------------
-        # Otherwise use AI prediction
-        # --------------------------------------------------
-
-        ai_category = ai_result["category"]
-
-        if ai_category == "mobile screenshot":
-            final_category = "screenshot"
-
-        elif ai_category == "desktop screenshot":
-            final_category = "screenshot"
-
-        elif ai_category == "application widget":
-            final_category = "widget"
-
-        elif ai_category == "camera photograph":
-            final_category = "camera_photo"
-
-        else:
-            final_category = ai_category
+        use_ai = confidence < self.ai_threshold
 
         return {
 
-            "category": final_category,
+            "category": category,
+
+            "confidence": round(confidence, 3),
+
+            "scores": scores,
+
+            "use_ai": use_ai
+
+        }
+
+    # ---------------------------------------------------------
+
+    def merge_ai_result(
+        self,
+        cv_result,
+        ai_result
+    ):
+        """
+        Merge OpenCV result with AI result.
+
+        AI is trusted when OpenCV confidence
+        is below the configured threshold.
+        """
+
+        if not cv_result["use_ai"]:
+
+            return {
+
+                "category": cv_result["category"],
+
+                "confidence": cv_result["confidence"],
+
+                "source": "opencv",
+
+                "scores": cv_result["scores"]
+
+            }
+
+        return {
+
+            "category": ai_result["category"],
 
             "confidence": ai_result["confidence"],
 
-            "reason": [
+            "source": "huggingface",
 
-                "No detector exceeded threshold.",
-                "Using AI prediction."
+            "prompt": ai_result["prompt"],
 
-            ],
-
-            "detector_scores": {
-
-                name: round(
-                    value["confidence"],
-                    4,
-                )
-
-                for name, value in detector_results.items()
-
-            }
+            "scores": ai_result["scores"]
 
         }
 
 
 decision_engine = DecisionEngine()
-
-#                   AI Prediction
-#                        │
-#                        ▼
-#              Feature Extraction
-#                        │
-#                        ▼
-#                  OCR Detection
-#                        │
-#                        ▼
-#         ┌──────────────┼──────────────┐
-#         ▼              ▼              ▼
-#  Screenshot      Wallpaper      Widget
-#         │
-#         ▼
-#    Document Detector
-#         │
-#         ▼
-#      Decision Engine
-#         │
-#         ▼
-#  Highest Confidence Wins
-#         │
-#         ▼
-#  Final Category

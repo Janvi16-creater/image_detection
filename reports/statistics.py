@@ -27,6 +27,7 @@ class Statistics:
 
         accepted = 0
         rejected = 0
+        duplicates = 0
 
         blurry = 0
         noisy = 0
@@ -38,7 +39,7 @@ class Statistics:
 
         for record in self.records:
 
-            category = record.get("category", "unknown")
+            category = record.get("category", "original")
             categories[category] += 1
 
             confidence_sum += record.get("confidence", 0)
@@ -50,6 +51,9 @@ class Statistics:
 
             if record.get("blur") in ("blurry", "extremely_blurry"):
                 blurry += 1
+                
+            if record.get("category") == "duplicate":
+                duplicates += 1
 
             if record.get("noise") in (
                 "moderate_noise",
@@ -82,6 +86,7 @@ class Statistics:
             "rejected": rejected,
 
             "categories": dict(categories),
+            "duplicates": duplicates,
 
             "blurry": blurry,
 

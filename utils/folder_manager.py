@@ -26,115 +26,124 @@ class FolderManager:
 
         self.folders = {
 
-            # -----------------------------
-            # Phase 1
-            # -----------------------------
+        "clean": self.output_dir / "clean",
 
-            "clean":
-                self.output_dir / "clean",
+        "duplicates": self.output_dir / "duplicates",
 
-            "duplicates":
-                self.output_dir / "duplicates",
+        "corrupted": self.output_dir / "corrupted",
 
-            "corrupted":
-                self.output_dir / "corrupted",
+        "screenshots": self.output_dir / "screenshots",
 
-            # -----------------------------
-            # Phase 2
-            # -----------------------------
+        "wallpapers": self.output_dir / "wallpapers",
 
-            "screenshots":
-                self.output_dir / "screenshots",
+        "widgets": self.output_dir / "widgets",
 
-            "wallpapers":
-                self.output_dir / "wallpapers",
+        "documents": self.output_dir / "documents",
 
-            "widgets":
-                self.output_dir / "widgets",
+        "original": self.output_dir / "original",
 
-            "documents":
-                self.output_dir / "documents",
+        "reports": self.output_dir / "reports",
 
-            "camera_photos":
-                self.output_dir / "camera_photos",
-
-            "unknown":
-                self.output_dir / "unknown",
-
-            # -----------------------------
-            # Phase 3
-            # -----------------------------
-
-            "blurry":
-                self.output_dir / "blurry",
-
-            "noisy":
-                self.output_dir / "noisy",
-
-            "overexposed":
-                self.output_dir / "overexposed",
-
-            "underexposed":
-                self.output_dir / "underexposed",
-
-            "low_resolution":
-                self.output_dir / "low_resolution"
-
-        }
+    }
 
     # --------------------------------------------------------
 
     def create_folders(self):
 
-        """
-        Create every folder if it
-        does not already exist.
-        """
+        qualities = [
+
+            "accepted",
+            "blurry",
+            "noisy",
+            "underexposed",
+            "overexposed",
+            "low_resolution"
+
+        ]
 
         self.output_dir.mkdir(
             parents=True,
             exist_ok=True
         )
 
-        for folder in self.folders.values():
+        # Category folders
+        categories = [
+            "wallpapers",
+            "widgets",
+            "screenshots",
+            "documents",
+            "original"
+        ]
 
-            folder.mkdir(
+        for category in categories:
+
+            base = self.output_dir / category
+
+            base.mkdir(
                 parents=True,
                 exist_ok=True
             )
 
+            for quality in qualities:
+
+                (base / quality).mkdir(
+                    parents=True,
+                    exist_ok=True
+                )
+
+        # Special folders
+        (self.output_dir / "duplicates").mkdir(exist_ok=True)
+        (self.output_dir / "corrupted").mkdir(exist_ok=True)
+        (self.output_dir / "reports").mkdir(exist_ok=True)
+
     # --------------------------------------------------------
 
-    def get_folder(self, category):
-
+    def get_folder(self, category, quality="accepted"):
         """
-        Return folder path.
+        Returns output folder based on category and quality.
+
+        Example:
+            widgets/accepted
+            widgets/blurry
         """
 
         mapping = {
-            "screenshot": "screenshots",
+
             "wallpaper": "wallpapers",
+            "wallpapers": "wallpapers",
+
+            "screenshot": "screenshots",
+            "screenshots": "screenshots",
+
             "widget": "widgets",
+            "widgets": "widgets",
+
             "document": "documents",
-            "camera_photo": "camera_photos",
-            "camera photograph": "camera_photos",
-            "camera_photos": "camera_photos",
-            "mobile screenshot": "screenshots",
-            "desktop screenshot": "screenshots",
-            "application widget": "widgets",
+            "documents": "documents",
+
+            "original": "original",
+            "unknown": "original",
+            
+            "duplicate": "duplicates",
+            "duplicates": "duplicates",
+            "corrupted": "corrupted",
+
         }
 
-        mapped_category = mapping.get(category, category)
+        category_folder = mapping.get(category, "original")
 
-        return self.folders.get(
-            mapped_category,
-            self.folders["unknown"]
+        destination = self.output_dir / category_folder / quality
+
+        destination.mkdir(
+            parents=True,
+            exist_ok=True
         )
+
+        return destination
 
     # --------------------------------------------------------
 
     def list_folders(self):
-
         """
         Return dictionary of folders.
         """

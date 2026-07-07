@@ -26,6 +26,8 @@ class ReportGenerator:
         category,
 
         confidence,
+        
+        source,
 
         blur,
 
@@ -35,7 +37,7 @@ class ReportGenerator:
 
         resolution,
 
-        status
+        status,
 
     ):
 
@@ -46,6 +48,8 @@ class ReportGenerator:
             "category": category,
 
             "confidence": confidence,
+            
+            "source": source,
 
             "blur": blur,
 

@@ -1,200 +1,101 @@
 """
 Document Detector
 
-Verifies whether an image is likely to be
-a document.
-
-Supports:
-- PDF pages
-- Scanned documents
+Detects:
+- PDF
+- Book
 - Notes
-- Books
-- Bills
-- Certificates
-- Forms
+- Receipt
+- Scanned Paper
+
+Uses BOTH OCR and image features.
 """
 
-from typing import Dict
+import re
 
 
 class DocumentDetector:
 
-    def __init__(self):
-        pass
+    def detect(self, features, ocr_result):
 
-    def verify(
-        self,
-        ai_result: Dict,
-        features: Dict,
-        ocr_result: Dict,
-    ):
+        words = ocr_result.get("text", [])
+        word_count = ocr_result.get("word_count", 0)
 
         score = 0.0
         reasons = []
 
-        # ------------------------------------
-        # AI Prediction
-        # ------------------------------------
+        # --------------------------------------------------
+        # OCR
+        # --------------------------------------------------
 
-        ai_score = ai_result["scores"].get(
-            "document",
-            0
+        if word_count > 120:
+            score += 0.30
+            reasons.append("very high word count")
+
+        elif word_count > 70:
+            score += 0.20
+            reasons.append("high word count")
+
+        elif word_count > 40:
+            score += 0.10
+
+        characters = sum(len(w) for w in words)
+
+        if characters > 600:
+            score += 0.20
+            reasons.append("high text density")
+
+        # --------------------------------------------------
+        # Mostly alphabetic text
+        # --------------------------------------------------
+
+        alphabetic = sum(
+            1
+            for w in words
+            if re.fullmatch(r"[A-Za-z]+", w)
         )
 
-        score += ai_score * 0.55
+        if word_count:
 
-        if ai_score > 0.50:
+            ratio = alphabetic / word_count
 
-            reasons.append(
-                "AI strongly predicts document"
-            )
+            if ratio > 0.80:
+                score += 0.10
+                reasons.append("clean readable text")
 
-        # ------------------------------------
-        # OCR Text Count
-        # ------------------------------------
+        # --------------------------------------------------
+        # OpenCV Features
+        # --------------------------------------------------
 
-        text_count = ocr_result["text_count"]
+        # Documents usually have fewer edges
 
-        if text_count > 40:
-
+        if features["edge_density"] < 0.10:
             score += 0.15
+            reasons.append("few edges")
 
-            reasons.append(
-                "large amount of text"
-            )
+        # Documents have fewer UI lines
 
-        elif text_count > 20:
+        if features["horizontal_lines"] < 8:
+            score += 0.05
 
+        if features["vertical_lines"] < 8:
+            score += 0.05
+
+        # White backgrounds are common
+
+        if features["brightness"] > 180:
             score += 0.10
+            reasons.append("bright background")
 
-            reasons.append(
-                "moderate amount of text"
-            )
-
-        # ------------------------------------
-        # Total Characters
-        # ------------------------------------
-
-        characters = ocr_result["total_characters"]
-
-        if characters > 500:
-
-            score += 0.10
-
-            reasons.append(
-                "large amount of readable content"
-            )
-
-        elif characters > 250:
-
-            score += 0.05
-
-            reasons.append(
-                "medium amount of readable content"
-            )
-
-        # ------------------------------------
-        # OCR Density
-        # ------------------------------------
-
-        density = ocr_result["text_density"]
-
-        if density > 0.20:
-
-            score += 0.08
-
-            reasons.append(
-                "high text density"
-            )
-
-        # ------------------------------------
-        # Brightness
-        # ------------------------------------
-
-        brightness = features["brightness"]
-
-        if brightness > 0.65:
-
-            score += 0.05
-
-            reasons.append(
-                "bright background"
-            )
-
-        # ------------------------------------
-        # Saturation
-        # ------------------------------------
-
-        saturation = features["saturation"]
-
-        if saturation < 0.20:
-
-            score += 0.05
-
-            reasons.append(
-                "low saturation"
-            )
-
-        # ------------------------------------
-        # Contrast
-        # ------------------------------------
-
-        contrast = features["contrast"]
-
-        if contrast > 0.15:
-
-            score += 0.03
-
-            reasons.append(
-                "good text contrast"
-            )
-
-        # ------------------------------------
-        # Edge Density
-        # ------------------------------------
-
-        edge_density = features["edge_density"]
-
-        if 0.05 <= edge_density <= 0.15:
-
-            score += 0.03
-
-            reasons.append(
-                "moderate edge density"
-            )
-
-        # ------------------------------------
-        # Entropy
-        # ------------------------------------
-
-        entropy = features["entropy"]
-
-        if entropy > 6:
-
-            score += 0.02
-
-            reasons.append(
-                "high information content"
-            )
-
-        # ------------------------------------
-        # Final Score
-        # ------------------------------------
-
-        score = max(
-            0.0,
-            min(score, 1.0)
-        )
+        confidence = min(score, 1.0)
 
         return {
 
-            "category": "document",
+            "is_document": confidence >= 0.75,
 
-            "confidence": round(score, 4),
+            "confidence": round(confidence, 2),
 
-            "verified": score >= 0.60,
-
-            "reasons": reasons
+            "reason": ", ".join(reasons)
 
         }
 

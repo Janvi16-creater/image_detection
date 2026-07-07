@@ -1,190 +1,89 @@
 """
 Widget Detector
 
-Verifies whether an image is likely to be
-an application widget or small UI component.
-"""
+Detects app widgets and UI screenshots.
 
-from typing import Dict
+Uses OCR + OpenCV Features.
+"""
 
 
 class WidgetDetector:
 
-    def __init__(self):
-        pass
-
-    def verify(
-        self,
-        ai_result: Dict,
-        features: Dict,
-        ocr_result: Dict,
-    ):
+    def detect(self, features, ocr_result):
 
         score = 0.0
         reasons = []
 
-        # ----------------------------------------
-        # AI Prediction
-        # ----------------------------------------
+        word_count = ocr_result["word_count"]
 
-        ai_score = ai_result["scores"].get(
-            "application widget",
-            0
-        )
-
-        score += ai_score * 0.60
-
-        if ai_score > 0.50:
-
-            reasons.append(
-                "AI strongly predicts widget"
-            )
-
-        # ----------------------------------------
+        # --------------------------------------------------
         # OCR
-        # ----------------------------------------
+        # --------------------------------------------------
 
-        text_count = ocr_result["text_count"]
+        # Widgets can contain a moderate amount of text
 
-        if 1 <= text_count <= 10:
+        if word_count <= 15:
+
+            score += 0.15
+
+        elif word_count <= 60:
+
+            score += 0.20
+            reasons.append("normal UI text")
+
+        elif word_count <= 100:
 
             score += 0.10
 
-            reasons.append(
-                "small amount of text"
-            )
+        # --------------------------------------------------
+        # Dense UI
 
-        elif text_count > 15:
+        if features["center_edge_density"] > 0.20:
 
-            score -= 0.08
+            score += 0.20
+            reasons.append("dense UI")
 
-            reasons.append(
-                "too much text for widget"
-            )
+        # Many edges
 
-        text_density = ocr_result["text_density"]
+        if features["edge_density"] > 0.15:
 
-        if text_density < 0.10:
+            score += 0.15
 
-            score += 0.05
+        # UI contains many horizontal separators
 
-            reasons.append(
-                "low text density"
-            )
+        if features["horizontal_lines"] >= 10:
 
-        # ----------------------------------------
-        # Edge Density
-        # ----------------------------------------
+            score += 0.15
 
-        edge_density = features["edge_density"]
+        # UI contains many vertical separators
 
-        if 0.05 <= edge_density <= 0.15:
+        if features["vertical_lines"] >= 6:
 
-            score += 0.08
+            score += 0.15
 
-            reasons.append(
-                "moderate edge density"
-            )
+        # Portrait screenshots
 
-        elif edge_density > 0.22:
+        ratio = features["aspect_ratio"]
 
-            score -= 0.05
+        if ratio < 0.80:
 
-            reasons.append(
-                "too many edges"
-            )
+            score += 0.10
 
-        # ----------------------------------------
-        # Brightness
-        # ----------------------------------------
+        # Sharp UI
 
-        brightness = features["brightness"]
+        if features["sharpness"] > 180:
 
-        if 0.25 <= brightness <= 0.80:
+            score += 0.10
 
-            score += 0.04
-
-            reasons.append(
-                "balanced brightness"
-            )
-
-        # ----------------------------------------
-        # Saturation
-        # ----------------------------------------
-
-        saturation = features["saturation"]
-
-        if saturation > 0.20:
-
-            score += 0.04
-
-            reasons.append(
-                "good color saturation"
-            )
-
-        # ----------------------------------------
-        # Contrast
-        # ----------------------------------------
-
-        contrast = features["contrast"]
-
-        if contrast > 0.15:
-
-            score += 0.03
-
-            reasons.append(
-                "good contrast"
-            )
-
-        # ----------------------------------------
-        # Resolution
-        # ----------------------------------------
-
-        width = features["width"]
-        height = features["height"]
-
-        area = width * height
-
-        if area < 1_500_000:
-
-            score += 0.05
-
-            reasons.append(
-                "small image size"
-            )
-
-        # ----------------------------------------
-        # Entropy
-        # ----------------------------------------
-
-        entropy = features["entropy"]
-
-        if 5.5 <= entropy <= 7.5:
-
-            score += 0.04
-
-            reasons.append(
-                "moderate visual complexity"
-            )
-
-        # ----------------------------------------
-        # Final Score
-        # ----------------------------------------
-
-        score = max(
-            0.0,
-            min(score, 1.0)
-        )
+        confidence = min(score, 1.0)
 
         return {
 
-            "category": "widget",
+            "is_widget": confidence >= 0.70,
 
-            "confidence": round(score, 4),
+            "confidence": round(confidence, 2),
 
-            "verified": score >= 0.60,
-
-            "reasons": reasons
+            "reason": ", ".join(reasons)
 
         }
 

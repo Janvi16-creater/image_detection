@@ -1,27 +1,22 @@
 """
 Feature Extractor
 
-Extracts low-level image features that help verify
-AI predictions.
+Extracts lightweight visual features using OpenCV.
 
-Features:
-- Width
-- Height
-- Aspect Ratio
-- Brightness
-- Contrast
-- Variance
-- Saturation
-- Edge Density
-- Entropy
-- Sharpness
+This module is intentionally fast because it runs on every image.
+
+Returned features are later used by:
+    - Wallpaper Detector
+    - Camera Detector
+    - Screenshot Detector
+    - Widget Detector
+    - Decision Engine
 """
 
 from pathlib import Path
 
 import cv2
 import numpy as np
-from PIL import Image
 
 
 class FeatureExtractor:
@@ -29,102 +24,194 @@ class FeatureExtractor:
     def __init__(self):
         pass
 
-    def _load_image(self, image):
-
-        if isinstance(image, (str, Path)):
-            image = Image.open(image).convert("RGB")
-
-        return image
+    # ---------------------------------------------------------
 
     def extract(self, image):
 
-        image = self._load_image(image)
+        if image is None:
 
-        rgb = np.array(image)
+            raise ValueError("Unable to read image: image is None")
 
-        gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+        height, width = image.shape[:2]
 
-        height, width = gray.shape
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        # ----------------------------
-        # Basic Information
-        # ----------------------------
+        # -----------------------------------------------------
+        # Basic Image Information
+        # -----------------------------------------------------
 
         aspect_ratio = width / height
 
         megapixels = (width * height) / 1_000_000
 
-        # ----------------------------
+        # -----------------------------------------------------
         # Brightness
-        # ----------------------------
+        # -----------------------------------------------------
 
-        brightness = float(np.mean(gray) / 255.0)
+        brightness = float(np.mean(gray))
 
-        # ----------------------------
+        # -----------------------------------------------------
         # Contrast
-        # ----------------------------
+        # -----------------------------------------------------
 
-        contrast = float(np.std(gray) / 255.0)
+        contrast = float(np.std(gray))
 
-        # ----------------------------
-        # Variance
-        # ----------------------------
-
-        variance = float(np.var(gray) / (255.0 ** 2))
-
-        # ----------------------------
-        # Saturation
-        # ----------------------------
-
-        hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
-
-        saturation = float(np.mean(hsv[:, :, 1]) / 255.0)
-
-        # ----------------------------
-        # Edge Density
-        # ----------------------------
-
-        edges = cv2.Canny(gray, 100, 200)
-
-        edge_density = float(np.count_nonzero(edges) / edges.size)
-
-        # ----------------------------
+        # -----------------------------------------------------
         # Sharpness
-        # ----------------------------
+        # -----------------------------------------------------
 
         sharpness = float(
             cv2.Laplacian(gray, cv2.CV_64F).var()
         )
 
-        # ----------------------------
+        # -----------------------------------------------------
+        # Edge Density
+        # -----------------------------------------------------
+
+        edges = cv2.Canny(
+            gray,
+            100,
+            200
+        )
+
+        edge_density = float(
+            np.count_nonzero(edges)
+            /
+            edges.size
+        )
+
+        # -----------------------------------------------------
         # Entropy
-        # ----------------------------
+        # -----------------------------------------------------
 
         histogram = cv2.calcHist(
             [gray],
             [0],
             None,
             [256],
-            [0, 256],
+            [0, 256]
         )
 
         histogram = histogram.ravel()
 
-        histogram = histogram / histogram.sum()
+        histogram /= histogram.sum()
 
         entropy = float(
+
             -np.sum(
-                histogram * np.log2(histogram + 1e-8)
+
+                histogram * np.log2(
+                    histogram + 1e-8
+                )
+
             )
+
         )
 
-        # ----------------------------
+        # -----------------------------------------------------
         # Color Statistics
-        # ----------------------------
+        # -----------------------------------------------------
 
-        rgb_mean = np.mean(rgb, axis=(0, 1))
+        hsv = cv2.cvtColor(
+            image,
+            cv2.COLOR_BGR2HSV
+        )
 
-        rgb_std = np.std(rgb, axis=(0, 1))
+        saturation = float(
+            np.mean(hsv[:, :, 1])
+        )
+
+        value = float(
+            np.mean(hsv[:, :, 2])
+        )
+
+        color_variance = float(
+            np.var(
+                image.reshape(-1, 3),
+                axis=0
+            ).mean()
+        )
+
+        # -----------------------------------------------------
+        # Center Region Analysis
+        # -----------------------------------------------------
+
+        h1 = height // 4
+        h2 = 3 * height // 4
+
+        w1 = width // 4
+        w2 = 3 * width // 4
+
+        center = gray[h1:h2, w1:w2]
+
+        center_edges = cv2.Canny(
+            center,
+            100,
+            200
+        )
+
+        center_edge_density = float(
+
+            np.count_nonzero(center_edges)
+
+            /
+
+            center_edges.size
+
+        )
+
+        center_brightness = float(
+            np.mean(center)
+        )
+
+        center_contrast = float(
+            np.std(center)
+        )
+
+        # -----------------------------------------------------
+        # Horizontal / Vertical Line Density
+        # -----------------------------------------------------
+
+        lines = cv2.HoughLinesP(
+
+            edges,
+
+            1,
+
+            np.pi / 180,
+
+            threshold=100,
+
+            minLineLength=80,
+
+            maxLineGap=10
+
+        )
+
+        horizontal_lines = 0
+        vertical_lines = 0
+
+        if lines is not None:
+
+            for line in lines:
+
+                # Handle different OpenCV output formats
+                if len(line.shape) == 2:
+                    x1, y1, x2, y2 = line[0]
+                else:
+                    x1, y1, x2, y2 = line
+
+                # Horizontal line
+                if abs(y2 - y1) <= 5:
+                    horizontal_lines += 1
+
+                # Vertical line
+                if abs(x2 - x1) <= 5:
+                    vertical_lines += 1
+
+        # -----------------------------------------------------
+        # Return All Features
+        # -----------------------------------------------------
 
         return {
 
@@ -132,27 +219,35 @@ class FeatureExtractor:
 
             "height": height,
 
-            "megapixels": round(megapixels, 2),
+            "megapixels": megapixels,
 
-            "aspect_ratio": round(aspect_ratio, 3),
+            "aspect_ratio": aspect_ratio,
 
-            "brightness": round(brightness, 4),
+            "brightness": brightness,
 
-            "contrast": round(contrast, 4),
+            "contrast": contrast,
 
-            "variance": round(variance, 4),
+            "sharpness": sharpness,
 
-            "saturation": round(saturation, 4),
+            "edge_density": edge_density,
 
-            "edge_density": round(edge_density, 4),
+            "entropy": entropy,
 
-            "entropy": round(entropy, 4),
+            "saturation": saturation,
 
-            "sharpness": round(sharpness, 2),
+            "value": value,
 
-            "rgb_mean": rgb_mean.tolist(),
+            "color_variance": color_variance,
 
-            "rgb_std": rgb_std.tolist()
+            "center_edge_density": center_edge_density,
+
+            "center_brightness": center_brightness,
+
+            "center_contrast": center_contrast,
+
+            "horizontal_lines": horizontal_lines,
+
+            "vertical_lines": vertical_lines
 
         }
 

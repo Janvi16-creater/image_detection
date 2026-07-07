@@ -2,6 +2,10 @@
 Main Image Pipeline
 """
 
+import shutil
+import cv2
+
+from config import OUTPUT_DIR
 from preprocessing.image_loader import load_images
 from preprocessing.validator import validate_image
 
@@ -24,7 +28,6 @@ from pipeline.progress_tracker import ProgressTracker
 from pipeline.batch_processor import batch_generator
 from pipeline.exception_handler import ExceptionHandler
 
-
 class ImagePipeline:
 
     def __init__(self, dataset_path):
@@ -32,6 +35,10 @@ class ImagePipeline:
         self.dataset_path = dataset_path
 
     def run(self):
+        
+        if OUTPUT_DIR.exists():
+
+            shutil.rmtree(OUTPUT_DIR)
 
         folder_manager.create_folders()
 
@@ -58,10 +65,54 @@ class ImagePipeline:
                             "corrupted"
                         )
 
-                        file_manager.move_file(
+                        file_manager.copy_file(
                             image_path,
                             destination
                         )
+                        
+                        logger.log(
+
+                            filename=image_path.name,
+
+                            category="corrupted",
+
+                            confidence=1.0,
+
+                            source="validator",
+
+                            blur="-",
+
+                            noise="-",
+
+                            exposure="-",
+
+                            resolution="-",
+
+                            status="Corrupted"
+
+                        )
+                        
+                        report_generator.add_record(
+
+                            filename=image_path.name,
+
+                            category="corrupted",
+
+                            confidence=1.0,
+
+                            source="validator",
+
+                            blur="-",
+
+                            noise="-",
+
+                            exposure="-",
+
+                            resolution="-",
+
+                            status="Corrupted"
+                        )
+                    
 
                         continue
 
@@ -70,25 +121,87 @@ class ImagePipeline:
                     # -----------------------------
 
                     is_duplicate, duplicate_reason = duplicate_manager.is_duplicate(image_path)
+                    print(
+                        image_path.name,
+                        "Duplicate:",
+                        is_duplicate,
+                        duplicate_reason
+                    )
                     if is_duplicate:
 
                         destination = folder_manager.get_folder(
                             "duplicates"
                         )
+                        
+                        print("COPYING DUPLICATE TO:", destination)
 
-                        file_manager.move_file(
+                        file_manager.copy_file(
                             image_path,
                             destination
                         )
+                        
+                        logger.log(
+
+                            filename=image_path.name,
+
+                            category="duplicate",
+
+                            confidence=1.0,
+
+                            source="duplicate_detector",
+
+                            blur="-",
+
+                            noise="-",
+
+                            exposure="-",
+
+                            resolution="-",
+
+                            status="Duplicate"
+
+                        )
+                        
+                        report_generator.add_record(
+
+                            filename=image_path.name,
+
+                            category="duplicate",
+
+                            confidence=1.0,
+
+                            source="duplicate_detector",
+
+                            blur="-",
+
+                            noise="-",
+
+                            exposure="-",
+
+                            resolution="-",
+
+                            status="Duplicate"
+
+                    )
 
                         continue
+                    
+                    # -----------------------------
+                    # Load Image (Only Once)
+                    # -----------------------------
+
+                    image = cv2.imread(str(image_path))
+
+                    if image is None:
+                        raise ValueError(f"Unable to read image: {image_path}")
 
                     # -----------------------------
                     # Classification
                     # -----------------------------
 
                     classification = image_classifier.classify(
-                        image_path
+                        image_path,
+                        image
                     )
 
                     category = classification["category"]
@@ -99,67 +212,118 @@ class ImagePipeline:
                     # Quality
                     # -----------------------------
 
-                    blur = blur_detector.detect(image_path)
+                    blur = blur_detector.detect(image)
 
-                    noise = noise_detector.detect(image_path)
+                    noise = noise_detector.detect(image)
 
-                    exposure = exposure_detector.detect(image_path)
+                    exposure = exposure_detector.detect(image)
 
-                    resolution = resolution_detector.detect(image_path)
+                    resolution = resolution_detector.detect(image)
 
                     # -----------------------------
                     # Accept / Reject
                     # -----------------------------
 
-                    status = "Accepted"
+                    # status = "Accepted"
 
-                    destination = folder_manager.get_folder(category)
+                    # destination = folder_manager.get_folder(category)
+
+                    # if blur["is_blurry"]:
+
+                    #     destination = folder_manager.get_folder(
+                    #         "blurry"
+                    #     )
+
+                    #     status = "Rejected"
+
+                    # elif noise["is_noisy"]:
+
+                    #     destination = folder_manager.get_folder(
+                    #         "noisy"
+                    #     )
+
+                    #     status = "Rejected"
+
+                    # elif not exposure["is_good_exposure"]:
+
+                    #     if exposure["label"] == "overexposed":
+
+                    #         destination = folder_manager.get_folder(
+                    #             "overexposed"
+                    #         )
+
+                    #     else:
+
+                    #         destination = folder_manager.get_folder(
+                    #             "underexposed"
+                    #         )
+
+                    #     status = "Rejected"
+
+                    # elif not resolution["is_good_resolution"]:
+
+                    #     destination = folder_manager.get_folder(
+                    #         "low_resolution"
+                    #     )
+
+                    #     status = "Rejected"
+                    
+                    # -----------------------------
+                    # Quality Decision
+                    # -----------------------------
+
+                    status = "Accepted"
+                    quality = "accepted"
+
+                    # Blur
 
                     if blur["is_blurry"]:
 
-                        destination = folder_manager.get_folder(
-                            "blurry"
-                        )
-
+                        quality = "blurry"
                         status = "Rejected"
+
+                    # Noise
 
                     elif noise["is_noisy"]:
 
-                        destination = folder_manager.get_folder(
-                            "noisy"
-                        )
-
+                        quality = "noisy"
                         status = "Rejected"
+
+                    # Exposure
 
                     elif not exposure["is_good_exposure"]:
 
+                        status = "Rejected"
+
                         if exposure["label"] == "overexposed":
 
-                            destination = folder_manager.get_folder(
-                                "overexposed"
-                            )
+                            quality = "overexposed"
 
                         else:
 
-                            destination = folder_manager.get_folder(
-                                "underexposed"
-                            )
+                            quality = "underexposed"
 
-                        status = "Rejected"
+                    # Resolution
 
                     elif not resolution["is_good_resolution"]:
 
-                        destination = folder_manager.get_folder(
-                            "low_resolution"
-                        )
-
+                        quality = "low_resolution"
                         status = "Rejected"
+
+                    # -----------------------------
+                    # Final Destination
+                    # -----------------------------
+
+                    destination = folder_manager.get_folder(
+                        category,
+                        quality
+                    )
 
                     # -----------------------------
                     # Move File
                     # -----------------------------
 
-                    file_manager.move_file(
+                    file_manager.copy_file(
                         image_path,
                         destination
                     )
@@ -175,6 +339,8 @@ class ImagePipeline:
                         category=category,
 
                         confidence=confidence,
+                        
+                        source = classification["source"],
 
                         blur=blur["label"],
 
@@ -201,6 +367,8 @@ class ImagePipeline:
                         category=category,
 
                         confidence=confidence,
+                        
+                        source = classification["source"],
 
                         blur=blur["label"],
 

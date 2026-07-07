@@ -63,17 +63,6 @@ class FileManager:
 
         destination = destination_folder / source.name
 
-        counter = 1
-
-        while destination.exists():
-
-            destination = (
-                destination_folder
-                / f"{source.stem}_{counter}{source.suffix}"
-            )
-
-            counter += 1
-
         shutil.copy2(
             str(source),
             str(destination)

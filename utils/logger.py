@@ -74,6 +74,8 @@ class ProcessingLogger:
         category,
 
         confidence,
+        
+        source,
 
         blur,
 

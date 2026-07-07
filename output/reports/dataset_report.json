@@ -1,8 +1,9 @@
 [
     {
-        "filename": "1000012535.jpg",
-        "category": "camera_photo",
-        "confidence": 0.5824,
+        "filename": "1000012535 - Copy.jpg",
+        "category": "camera",
+        "confidence": 0.75,
+        "source": "opencv",
         "blur": "sharp",
         "noise": "very_clean",
         "exposure": "properly_exposed",
@@ -10,9 +11,21 @@
         "status": "Accepted"
     },
     {
+        "filename": "1000012535.jpg",
+        "category": "duplicate",
+        "confidence": 1.0,
+        "source": "duplicate_detector",
+        "blur": "-",
+        "noise": "-",
+        "exposure": "-",
+        "resolution": "-",
+        "status": "Duplicate"
+    },
+    {
         "filename": "1000378831.jpg",
-        "category": "screenshot",
-        "confidence": 0.5035,
+        "category": "widget",
+        "confidence": 0.7,
+        "source": "opencv",
         "blur": "sharp",
         "noise": "very_clean",
         "exposure": "underexposed",
@@ -21,8 +34,9 @@
     },
     {
         "filename": "1000378939.jpg",
-        "category": "screenshot",
-        "confidence": 0.6764,
+        "category": "wallpaper",
+        "confidence": 0.9,
+        "source": "opencv",
         "blur": "extremely_blurry",
         "noise": "very_clean",
         "exposure": "underexposed",
@@ -31,8 +45,9 @@
     },
     {
         "filename": "1000378940.jpg",
-        "category": "wallpaper",
-        "confidence": 0.5646,
+        "category": "camera",
+        "confidence": 0.75,
+        "source": "opencv",
         "blur": "sharp",
         "noise": "low_noise",
         "exposure": "properly_exposed",
@@ -40,9 +55,21 @@
         "status": "Accepted"
     },
     {
+        "filename": "Screenshot 2026-07-06 155807.png",
+        "category": "wallpaper",
+        "confidence": 0.65,
+        "source": "opencv",
+        "blur": "sharp",
+        "noise": "low_noise",
+        "exposure": "underexposed",
+        "resolution": "Low Resolution",
+        "status": "Rejected"
+    },
+    {
         "filename": "Soft on Hair, Big on Style..png",
-        "category": "widget",
-        "confidence": 0.6255,
+        "category": "wallpaper",
+        "confidence": 1.0,
+        "source": "opencv",
         "blur": "sharp",
         "noise": "very_clean",
         "exposure": "properly_exposed",

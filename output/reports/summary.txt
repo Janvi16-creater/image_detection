@@ -1,10 +1,11 @@
-total_images: 5
+total_images: 7
 accepted: 3
-rejected: 2
-categories: {'camera_photo': 1, 'screenshot': 2, 'wallpaper': 1, 'widget': 1}
+rejected: 4
+categories: {'camera': 2, 'duplicate': 1, 'widget': 1, 'wallpaper': 3}
+duplicates: 1
 blurry: 1
 noisy: 0
 overexposed: 0
-underexposed: 2
-low_resolution: 4
-average_confidence: 0.59
+underexposed: 3
+low_resolution: 5
+average_confidence: 0.821

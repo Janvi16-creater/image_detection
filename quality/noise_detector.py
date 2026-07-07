@@ -48,13 +48,14 @@ class NoiseDetector:
         if isinstance(image, (str, Path)):
 
             image = Image.open(image).convert("RGB")
+            image = np.array(image)
+            gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-        image = np.array(image)
+        else:
 
-        gray = cv2.cvtColor(
-            image,
-            cv2.COLOR_RGB2GRAY
-        )
+            # Already a numpy array from cv2.imread (BGR)
+            image = np.array(image)
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         return gray
 

@@ -1,117 +1,156 @@
 """
-AI Classifier using CLIP (Zero-Shot)
+AI Image Classifier
 
-This module loads the CLIP model once and predicts
-the probability that an image belongs to one of the
-supported categories.
+Batch inference using HuggingFace SigLIP.
+
+The model is loaded only once.
+Multiple uncertain images are classified
+in one forward pass.
 """
 
 from pathlib import Path
 
 import torch
 from PIL import Image
-from transformers import CLIPModel, CLIPProcessor
+
+from transformers import SiglipModel
+from transformers import AutoProcessor
+from config import MODEL_NAME
+
+from classification.ai.prompts import (
+    CLASS_LABELS,
+    LABEL_MAPPING
+)
 
 
 class AIClassifier:
-    """
-    Singleton AI classifier.
 
-    The model is loaded only once.
-    """
+    def __init__(self):
 
-    _instance = None
+        print("\nLoading HuggingFace SigLIP...")
 
-    CATEGORIES = [
-        "mobile screenshot",
-        "desktop screenshot",
-        "wallpaper",
-        "application widget",
-        "document",
-        "camera photograph"
-    ]
-
-    def __new__(cls):
-
-        if cls._instance is None:
-
-            cls._instance = super().__new__(cls)
-
-            cls._instance._initialize()
-
-        return cls._instance
-
-    def _initialize(self):
-
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        self.processor = CLIPProcessor.from_pretrained(
-            "openai/clip-vit-base-patch32"
+        self.device = (
+            "cuda"
+            if torch.cuda.is_available()
+            else "cpu"
         )
 
-        self.model = CLIPModel.from_pretrained(
-            "openai/clip-vit-base-patch32"
-        ).to(self.device)
+        self.processor = AutoProcessor.from_pretrained(
+            MODEL_NAME
+        )
+
+        self.model = SiglipModel.from_pretrained(
+            MODEL_NAME
+        )
+
+        self.model.to(self.device)
 
         self.model.eval()
 
-    def _load_image(self, image):
+        print(f"Model Loaded ({self.device})")
 
-        if isinstance(image, (str, Path)):
-            image = Image.open(image).convert("RGB")
-
-        return image
+    # ---------------------------------------------------------
 
     @torch.no_grad()
-    def predict(self, image):
+    def classify(self, image_path):
+        """
+        Backward compatible.
+        """
 
-        image = self._load_image(image)
+        return self.classify_batch(
+            [image_path]
+        )[0]
 
-        text = [f"a photo of {label}" for label in self.CATEGORIES]
+    # ---------------------------------------------------------
+
+    @torch.no_grad()
+    def classify_batch(self, image_paths):
+        """
+        Batch inference.
+
+        Parameters
+        ----------
+        image_paths : list[Path]
+
+        Returns
+        -------
+        list
+        """
+
+        if len(image_paths) == 0:
+            return []
+
+        images = []
+
+        for path in image_paths:
+
+            images.append(
+                Image.open(path).convert("RGB")
+            )
 
         inputs = self.processor(
-            text=text,
-            images=image,
-            return_tensors="pt",
+
+            text=CLASS_LABELS,
+
+            images=images,
+
             padding=True,
+
+            return_tensors="pt"
+
         )
 
         inputs = {
-            key: value.to(self.device)
-            for key, value in inputs.items()
+
+            k: v.to(self.device)
+
+            for k, v in inputs.items()
+
         }
 
         outputs = self.model(**inputs)
 
-        logits = outputs.logits_per_image
+        probs = outputs.logits_per_image.softmax(dim=1)
 
-        probabilities = logits.softmax(dim=1).cpu().numpy()[0]
+        results = []
 
-        result = {}
+        for row in probs:
 
-        for label, score in zip(self.CATEGORIES, probabilities):
+            confidence, idx = row.max(dim=0)
 
-            result[label] = float(score)
+            prompt = CLASS_LABELS[idx.item()]
 
-        return result
+            results.append({
 
-    def predict_best(self, image):
+                "category": LABEL_MAPPING[prompt],
 
-        scores = self.predict(image)
+                "confidence": round(
+                    confidence.item(),
+                    3
+                ),
 
-        label = max(scores, key=scores.get)
+                "prompt": prompt,
 
-        confidence = scores[label]
+                "scores": {
 
-        return {
+                    CLASS_LABELS[i]:
 
-            "category": label,
+                    round(
+                        row[i].item(),
+                        4
+                    )
 
-            "confidence": round(confidence, 4),
+                    for i in range(
+                        len(CLASS_LABELS)
+                    )
 
-            "scores": scores
+                },
 
-        }
+                "source": "huggingface"
+
+            })
+
+        return results
 
 
-classifier = AIClassifier()
+ai_classifier = AIClassifier()

@@ -34,7 +34,7 @@ DOCUMENT_DIR = OUTPUT_DIR / "documents"
 
 BLUR_DIR = OUTPUT_DIR / "blurry"
 LOW_RESOLUTION_DIR = OUTPUT_DIR / "low_resolution"
-
+UNKNOWN_DIR = OUTPUT_DIR / "unknown"
 REPORT_DIR = OUTPUT_DIR / "reports"
 
 # -------------------------------------------------
@@ -82,5 +82,8 @@ OUTPUT_FOLDERS = [
     DOCUMENT_DIR,
     BLUR_DIR,
     LOW_RESOLUTION_DIR,
+    UNKNOWN_DIR,
     REPORT_DIR,
 ]
+
+MODEL_NAME = "google/siglip-base-patch16-224"

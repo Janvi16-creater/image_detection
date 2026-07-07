@@ -1,10 +1,7 @@
-filename,category,confidence,blur,noise,exposure,resolution,status
-1000012535.jpg,camera_photo,0.5824,sharp,very_clean,properly_exposed,Full HD,Accepted
-1000378939.jpg,screenshot,0.6764,extremely_blurry,very_clean,underexposed,Low Resolution,Rejected
-1000378940.jpg,wallpaper,0.5646,sharp,low_noise,properly_exposed,Low Resolution,Accepted
-"Soft on Hair, Big on Style..png",widget,0.6255,sharp,very_clean,properly_exposed,Low Resolution,Accepted
-1000012535.jpg,camera_photo,0.5824,sharp,very_clean,properly_exposed,Full HD,Accepted
-1000378831.jpg,screenshot,0.5035,sharp,very_clean,underexposed,Low Resolution,Rejected
-1000378939.jpg,screenshot,0.6764,extremely_blurry,very_clean,underexposed,Low Resolution,Rejected
-1000378940.jpg,wallpaper,0.5646,sharp,low_noise,properly_exposed,Low Resolution,Accepted
-"Soft on Hair, Big on Style..png",widget,0.6255,sharp,very_clean,properly_exposed,Low Resolution,Accepted
+1000012535 - Copy.jpg,camera,0.75,sharp,very_clean,properly_exposed,Full HD,Accepted
+1000012535.jpg,duplicate,1.0,-,-,-,-,Duplicate
+1000378831.jpg,widget,0.7,sharp,very_clean,underexposed,Low Resolution,Rejected
+1000378939.jpg,wallpaper,0.9,extremely_blurry,very_clean,underexposed,Low Resolution,Rejected
+1000378940.jpg,camera,0.75,sharp,low_noise,properly_exposed,Low Resolution,Accepted
+Screenshot 2026-07-06 155807.png,wallpaper,0.65,sharp,low_noise,underexposed,Low Resolution,Rejected
+"Soft on Hair, Big on Style..png",wallpaper,1.0,sharp,very_clean,properly_exposed,Low Resolution,Accepted

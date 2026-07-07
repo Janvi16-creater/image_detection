@@ -1,179 +1,71 @@
 """
-Screenshot Detector
+Screenshot Candidate Detector
 
-Verifies whether an image is likely to be
-a screenshot using:
+This detector DOES NOT classify screenshots.
 
-- AI prediction
-- OCR information
-- Image features
-
-This module returns a confidence score rather
-than a hard decision.
+It only decides whether OCR should be executed.
 """
-
-from typing import Dict
 
 
 class ScreenshotDetector:
 
     def __init__(self):
 
-        self.mobile_ratios = [
-            9 / 16,
-            9 / 19.5,
-            9 / 20,
-            9 / 21
-        ]
+        pass
 
-    def verify(
-        self,
-        ai_result: Dict,
-        features: Dict,
-        ocr_result: Dict,
-    ):
+    # ----------------------------------------------------------
+
+    def detect(self, features):
 
         score = 0.0
         reasons = []
 
-        # -----------------------------------
-        # AI Prediction
-        # -----------------------------------
+        # Many horizontal UI lines
 
-        ai_scores = ai_result["scores"]
+        if features["horizontal_lines"] > 8:
 
-        mobile_score = ai_scores.get(
-            "mobile screenshot",
-            0
-        )
+            score += 0.25
+            reasons.append("horizontal lines")
 
-        desktop_score = ai_scores.get(
-            "desktop screenshot",
-            0
-        )
+        # Many vertical UI lines
 
-        ai_score = max(
-            mobile_score,
-            desktop_score
-        )
+        if features["vertical_lines"] > 8:
 
-        score += ai_score * 0.55
+            score += 0.20
+            reasons.append("vertical lines")
 
-        if ai_score > 0.50:
-            reasons.append(
-                "AI strongly predicts screenshot"
-            )
+        # Lots of edges
 
-        # -----------------------------------
-        # OCR
-        # -----------------------------------
+        if features["edge_density"] > 0.15:
 
-        text_count = ocr_result["text_count"]
+            score += 0.20
+            reasons.append("high edge density")
 
-        if text_count >= 20:
+        # Strong center details
 
-            score += 0.15
+        if features["center_edge_density"] > 0.20:
 
-            reasons.append(
-                "large amount of text detected"
-            )
+            score += 0.20
+            reasons.append("center details")
 
-        elif text_count >= 10:
-
-            score += 0.10
-
-            reasons.append(
-                "moderate amount of text"
-            )
-
-        text_density = ocr_result["text_density"]
-
-        if text_density > 0.12:
-
-            score += 0.10
-
-            reasons.append(
-                "high text density"
-            )
-
-        # -----------------------------------
-        # Edge Density
-        # -----------------------------------
-
-        if features["edge_density"] > 0.10:
-
-            score += 0.08
-
-            reasons.append(
-                "high edge density"
-            )
-
-        # -----------------------------------
-        # Entropy
-        # -----------------------------------
-
-        if features["entropy"] > 6:
-
-            score += 0.04
-
-            reasons.append(
-                "high visual complexity"
-            )
-
-        # -----------------------------------
-        # Contrast
-        # -----------------------------------
-
-        if features["contrast"] > 0.18:
-
-            score += 0.03
-
-            reasons.append(
-                "good contrast"
-            )
-
-        # -----------------------------------
-        # Aspect Ratio
-        # -----------------------------------
+        # Portrait layout
 
         ratio = features["aspect_ratio"]
 
-        portrait = min(
-            abs(ratio - r)
-            for r in self.mobile_ratios
-        )
+        if ratio < 0.70:
 
-        if portrait < 0.05:
+            score += 0.15
+            reasons.append("portrait layout")
 
-            score += 0.05
-
-            reasons.append(
-                "mobile aspect ratio"
-            )
-
-        elif ratio > 1.3:
-
-            score += 0.04
-
-            reasons.append(
-                "desktop aspect ratio"
-            )
-
-        # -----------------------------------
-        # Final Score
-        # -----------------------------------
-
-        score = min(score, 1.0)
+        confidence = min(score, 1.0)
 
         return {
 
-            "category": "screenshot",
+            "candidate": confidence >= 0.55,
 
-            "confidence": round(score, 4),
+            "confidence": round(confidence, 2),
 
-            "verified": score >= 0.60,
-
-            "reasons": reasons
+            "reason": ", ".join(reasons)
 
         }
 
