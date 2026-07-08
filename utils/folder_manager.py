@@ -26,8 +26,6 @@ class FolderManager:
 
         self.folders = {
 
-        "clean": self.output_dir / "clean",
-
         "duplicates": self.output_dir / "duplicates",
 
         "corrupted": self.output_dir / "corrupted",
@@ -35,12 +33,6 @@ class FolderManager:
         "screenshots": self.output_dir / "screenshots",
 
         "wallpapers": self.output_dir / "wallpapers",
-
-        "widgets": self.output_dir / "widgets",
-
-        "documents": self.output_dir / "documents",
-
-        "original": self.output_dir / "original",
 
         "reports": self.output_dir / "reports",
 
@@ -69,10 +61,7 @@ class FolderManager:
         # Category folders
         categories = [
             "wallpapers",
-            "widgets",
             "screenshots",
-            "documents",
-            "original"
         ]
 
         for category in categories:
@@ -115,15 +104,6 @@ class FolderManager:
             "screenshot": "screenshots",
             "screenshots": "screenshots",
 
-            "widget": "widgets",
-            "widgets": "widgets",
-
-            "document": "documents",
-            "documents": "documents",
-
-            "original": "original",
-            "unknown": "original",
-            
             "duplicate": "duplicates",
             "duplicates": "duplicates",
             "corrupted": "corrupted",

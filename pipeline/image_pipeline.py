@@ -6,6 +6,7 @@ import shutil
 import cv2
 
 from config import OUTPUT_DIR
+
 from preprocessing.image_loader import load_images
 from preprocessing.validator import validate_image
 
@@ -28,16 +29,18 @@ from pipeline.progress_tracker import ProgressTracker
 from pipeline.batch_processor import batch_generator
 from pipeline.exception_handler import ExceptionHandler
 
+
 class ImagePipeline:
 
     def __init__(self, dataset_path):
 
         self.dataset_path = dataset_path
 
-    def run(self):
-        
-        if OUTPUT_DIR.exists():
+    # ---------------------------------------------------------
 
+    def run(self):
+
+        if OUTPUT_DIR.exists():
             shutil.rmtree(OUTPUT_DIR)
 
         folder_manager.create_folders()
@@ -54,150 +57,104 @@ class ImagePipeline:
 
                     progress.update()
 
-                    # -----------------------------
+                    # -------------------------------------------------
                     # Validation
-                    # -----------------------------
+                    # -------------------------------------------------
 
-                    is_valid, validation_reason = validate_image(image_path)
-                    if not is_valid:
+                    valid, _ = validate_image(image_path)
 
-                        destination = folder_manager.get_folder(
-                            "corrupted"
-                        )
+                    if not valid:
+
+                        destination = folder_manager.get_folder("corrupted")
 
                         file_manager.copy_file(
                             image_path,
                             destination
                         )
-                        
+
                         logger.log(
-
                             filename=image_path.name,
-
                             category="corrupted",
-
                             confidence=1.0,
-
                             source="validator",
-
                             blur="-",
-
                             noise="-",
-
                             exposure="-",
-
                             resolution="-",
-
                             status="Corrupted"
-
                         )
-                        
+
                         report_generator.add_record(
-
                             filename=image_path.name,
-
                             category="corrupted",
-
                             confidence=1.0,
-
                             source="validator",
-
                             blur="-",
-
                             noise="-",
-
                             exposure="-",
-
                             resolution="-",
-
                             status="Corrupted"
                         )
-                    
 
                         continue
 
-                    # -----------------------------
+                    # -------------------------------------------------
                     # Duplicate Detection
-                    # -----------------------------
+                    # -------------------------------------------------
 
-                    is_duplicate, duplicate_reason = duplicate_manager.is_duplicate(image_path)
-                    print(
-                        image_path.name,
-                        "Duplicate:",
-                        is_duplicate,
-                        duplicate_reason
-                    )
-                    if is_duplicate:
+                    duplicate, _ = duplicate_manager.is_duplicate(image_path)
+
+                    if duplicate:
 
                         destination = folder_manager.get_folder(
                             "duplicates"
                         )
-                        
-                        print("COPYING DUPLICATE TO:", destination)
 
                         file_manager.copy_file(
                             image_path,
                             destination
                         )
-                        
+
                         logger.log(
-
                             filename=image_path.name,
-
                             category="duplicate",
-
                             confidence=1.0,
-
                             source="duplicate_detector",
-
                             blur="-",
-
                             noise="-",
-
                             exposure="-",
-
                             resolution="-",
-
                             status="Duplicate"
-
                         )
-                        
+
                         report_generator.add_record(
-
                             filename=image_path.name,
-
                             category="duplicate",
-
                             confidence=1.0,
-
                             source="duplicate_detector",
-
                             blur="-",
-
                             noise="-",
-
                             exposure="-",
-
                             resolution="-",
-
                             status="Duplicate"
-
-                    )
+                        )
 
                         continue
-                    
-                    # -----------------------------
-                    # Load Image (Only Once)
-                    # -----------------------------
+
+                    # -------------------------------------------------
+                    # Load Image
+                    # -------------------------------------------------
 
                     image = cv2.imread(str(image_path))
 
                     if image is None:
-                        raise ValueError(f"Unable to read image: {image_path}")
+                        raise ValueError(
+                            f"Unable to read image: {image_path}"
+                        )
 
-                    # -----------------------------
-                    # Classification
-                    # -----------------------------
+                    # -------------------------------------------------
+                    # AI Classification
+                    # -------------------------------------------------
 
                     classification = image_classifier.classify(
                         image_path,
@@ -208,9 +165,11 @@ class ImagePipeline:
 
                     confidence = classification["confidence"]
 
-                    # -----------------------------
-                    # Quality
-                    # -----------------------------
+                    source = classification["source"]
+
+                    # -------------------------------------------------
+                    # Quality Detection
+                    # -------------------------------------------------
 
                     blur = blur_detector.detect(image)
 
@@ -220,117 +179,55 @@ class ImagePipeline:
 
                     resolution = resolution_detector.detect(image)
 
-                    # -----------------------------
-                    # Accept / Reject
-                    # -----------------------------
-
-                    # status = "Accepted"
-
-                    # destination = folder_manager.get_folder(category)
-
-                    # if blur["is_blurry"]:
-
-                    #     destination = folder_manager.get_folder(
-                    #         "blurry"
-                    #     )
-
-                    #     status = "Rejected"
-
-                    # elif noise["is_noisy"]:
-
-                    #     destination = folder_manager.get_folder(
-                    #         "noisy"
-                    #     )
-
-                    #     status = "Rejected"
-
-                    # elif not exposure["is_good_exposure"]:
-
-                    #     if exposure["label"] == "overexposed":
-
-                    #         destination = folder_manager.get_folder(
-                    #             "overexposed"
-                    #         )
-
-                    #     else:
-
-                    #         destination = folder_manager.get_folder(
-                    #             "underexposed"
-                    #         )
-
-                    #     status = "Rejected"
-
-                    # elif not resolution["is_good_resolution"]:
-
-                    #     destination = folder_manager.get_folder(
-                    #         "low_resolution"
-                    #     )
-
-                    #     status = "Rejected"
-                    
-                    # -----------------------------
+                    # -------------------------------------------------
                     # Quality Decision
-                    # -----------------------------
+                    # -------------------------------------------------
 
                     status = "Accepted"
-                    quality = "accepted"
 
-                    # Blur
+                    quality = "accepted"
 
                     if blur["is_blurry"]:
 
                         quality = "blurry"
-                        status = "Rejected"
 
-                    # Noise
+                        status = "Rejected"
 
                     elif noise["is_noisy"]:
 
                         quality = "noisy"
-                        status = "Rejected"
 
-                    # Exposure
+                        status = "Rejected"
 
                     elif not exposure["is_good_exposure"]:
 
                         status = "Rejected"
 
-                        if exposure["label"] == "overexposed":
-
-                            quality = "overexposed"
-
-                        else:
-
-                            quality = "underexposed"
-
-                    # Resolution
+                        quality = exposure["label"]
 
                     elif not resolution["is_good_resolution"]:
 
                         quality = "low_resolution"
+
                         status = "Rejected"
 
-                    # -----------------------------
-                    # Final Destination
-                    # -----------------------------
+                    # -------------------------------------------------
+                    # Destination
+                    # -------------------------------------------------
 
                     destination = folder_manager.get_folder(
                         category,
                         quality
                     )
 
-                    # -----------------------------
-                    # Move File
-                    # -----------------------------
-
                     file_manager.copy_file(
                         image_path,
                         destination
                     )
 
-                    # -----------------------------
-                    # Log
-                    # -----------------------------
+                    # -------------------------------------------------
+                    # Logging
+                    # -------------------------------------------------
 
                     logger.log(
 
@@ -339,8 +236,8 @@ class ImagePipeline:
                         category=category,
 
                         confidence=confidence,
-                        
-                        source = classification["source"],
+
+                        source=source,
 
                         blur=blur["label"],
 
@@ -348,17 +245,11 @@ class ImagePipeline:
 
                         exposure=exposure["label"],
 
-                        resolution=resolution[
-                            "resolution_label"
-                        ],
+                        resolution=resolution["resolution_label"],
 
                         status=status
 
                     )
-
-                    # -----------------------------
-                    # Report
-                    # -----------------------------
 
                     report_generator.add_record(
 
@@ -367,8 +258,8 @@ class ImagePipeline:
                         category=category,
 
                         confidence=confidence,
-                        
-                        source = classification["source"],
+
+                        source=source,
 
                         blur=blur["label"],
 
@@ -376,9 +267,7 @@ class ImagePipeline:
 
                         exposure=exposure["label"],
 
-                        resolution=resolution[
-                            "resolution_label"
-                        ],
+                        resolution=resolution["resolution_label"],
 
                         status=status
 
@@ -394,3 +283,6 @@ class ImagePipeline:
         progress.finish()
 
         report_generator.save()
+
+
+image_pipeline = ImagePipeline

@@ -1,67 +1,73 @@
 """
 Wallpaper Detector
 
-Detects wallpaper/background images using
-visual features extracted from FeatureExtractor.
+Determines how likely an image is a wallpaper
+using OpenCV features.
 """
 
 
 class WallpaperDetector:
 
-    def __init__(self):
-
-        pass
-
-    # ----------------------------------------------------------
-
     def detect(self, features):
 
         score = 0.0
+
         reasons = []
 
-        # Large image
-        if features["megapixels"] >= 1:
-            score += 0.10
-            reasons.append("large image")
+        # ----------------------------------------
+        # Very few text regions
+        # ----------------------------------------
 
-        # Smooth image
-        if features["edge_density"] < 0.08:
-            score += 0.30
-            reasons.append("low edge density")
+        if features["text_boxes"] <= 2:
+            score += 0.25
+            reasons.append("very_few_text")
 
-        # Low texture
-        if features["entropy"] < 6.5:
+        elif features["text_boxes"] <= 5:
+            score += 0.15
+
+        # ----------------------------------------
+        # Very few icons
+        # ----------------------------------------
+
+        if features["icon_count"] <= 2:
+            score += 0.35
+            reasons.append("no_icons")
+
+        elif features["icon_count"] <= 5:
             score += 0.20
-            reasons.append("low entropy")
 
-        # Soft contrast
-        if features["contrast"] < 60:
+        # ----------------------------------------
+        # No status bar
+        # ----------------------------------------
+
+        if features["top_density"] < 0.04:
             score += 0.15
-            reasons.append("low contrast")
+            reasons.append("no_status_bar")
 
-        # Rich colors
-        if features["saturation"] > 60:
+        # ----------------------------------------
+        # No navigation bar
+        # ----------------------------------------
+
+        if features["bottom_density"] < 0.04:
+            score += 0.15
+            reasons.append("no_navigation_bar")
+
+        # ----------------------------------------
+        # Smooth image
+        # ----------------------------------------
+
+        if features["edge_density"] < 0.06:
             score += 0.10
-            reasons.append("good saturation")
-
-        # Few straight UI lines
-        if (
-            features["horizontal_lines"] < 8
-            and
-            features["vertical_lines"] < 8
-        ):
-            score += 0.15
-            reasons.append("few UI lines")
 
         confidence = min(score, 1.0)
 
         return {
 
-            "is_wallpaper": confidence >= 0.70,
+            "candidate": confidence >= 0.50,
 
-            "confidence": round(confidence, 2),
+            "confidence": round(confidence, 3),
 
-            "reason": ", ".join(reasons)
+            "reasons": reasons,
 
         }
 

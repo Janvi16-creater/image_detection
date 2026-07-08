@@ -9,24 +9,26 @@ Workflow:
 4. Generate reports
 """
 
+from cv2 import error
+import traceback
 from config import (
     RAW_DATASET,
-    OUTPUT_FOLDERS,
+    OUTPUT_DIR,
 )
 
 from pipeline.image_pipeline import ImagePipeline
 
 
-def create_output_directories():
-    """
-    Create all required output directories.
-    """
+# def create_output_directories():
+#     """
+#     Create all required output directories.
+#     """
 
-    for folder in OUTPUT_FOLDERS:
-        folder.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+#     for folder in OUTPUT_DIR:
+#         folder.mkdir(
+#             parents=True,
+#             exist_ok=True,
+#         )
 
 
 def main():
@@ -35,7 +37,7 @@ def main():
     print("        IMAGE DATASET CLEANING PIPELINE")
     print("=" * 60)
 
-    create_output_directories()
+    # create_output_directories()
 
     if not RAW_DATASET.exists():
 
@@ -65,7 +67,8 @@ if __name__ == "__main__":
 
         print("\nPipeline Interrupted by User.")
 
+
     except Exception as error:
 
-        print("\nUnexpected Error:")
         print(error)
+        traceback.print_exc()

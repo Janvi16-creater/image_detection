@@ -1,7 +1,18 @@
-1000012535 - Copy.jpg,camera,0.75,sharp,very_clean,properly_exposed,Full HD,Accepted
-1000012535.jpg,duplicate,1.0,-,-,-,-,Duplicate
-1000378831.jpg,widget,0.7,sharp,very_clean,underexposed,Low Resolution,Rejected
-1000378939.jpg,wallpaper,0.9,extremely_blurry,very_clean,underexposed,Low Resolution,Rejected
-1000378940.jpg,camera,0.75,sharp,low_noise,properly_exposed,Low Resolution,Accepted
-Screenshot 2026-07-06 155807.png,wallpaper,0.65,sharp,low_noise,underexposed,Low Resolution,Rejected
-"Soft on Hair, Big on Style..png",wallpaper,1.0,sharp,very_clean,properly_exposed,Low Resolution,Accepted
+img (1).webp,wallpaper,0.75,extremely_blurry,very_clean,properly_exposed,Low Resolution,Rejected
+img (10).webp,wallpaper,0.75,extremely_blurry,very_clean,underexposed,4K,Rejected
+img (11).webp,wallpaper,0.5,moderately_sharp,very_clean,properly_exposed,Full HD,Accepted
+img (12).webp,wallpaper,0.75,sharp,low_noise,underexposed,2K,Rejected
+img (13).webp,wallpaper,0.273,sharp,low_noise,properly_exposed,2K,Accepted
+img (14).webp,wallpaper,0.6,extremely_blurry,very_clean,properly_exposed,4K,Rejected
+img (15).webp,screenshot,0.842,moderately_sharp,very_clean,properly_exposed,4K,Accepted
+img (16).webp,wallpaper,0.6,sharp,low_noise,properly_exposed,2K,Accepted
+img (17).webp,duplicate,1.0,-,-,-,-,Duplicate
+img (2).webp,wallpaper,0.5,sharp,low_noise,properly_exposed,Low Resolution,Accepted
+img (3).webp,wallpaper,0.6,sharp,very_clean,properly_exposed,Low Resolution,Accepted
+img (4).webp,wallpaper,0.75,extremely_blurry,very_clean,underexposed,4K,Rejected
+img (5).webp,wallpaper,0.681,sharp,low_noise,properly_exposed,HD,Accepted
+img (6).webp,screenshot,0.666,sharp,very_clean,properly_exposed,Low Resolution,Accepted
+img (7).webp,screenshot,0.921,sharp,very_clean,properly_exposed,HD,Accepted
+img (8).webp,screenshot,0.788,sharp,very_clean,properly_exposed,HD,Accepted
+img (9).webp,wallpaper,0.356,sharp,moderate_noise,properly_exposed,Low Resolution,Rejected
+img.webp,wallpaper,0.5,moderately_sharp,very_clean,properly_exposed,Low Resolution,Accepted

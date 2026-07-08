@@ -1,13 +1,8 @@
 """
 Decision Engine
 
-Combines outputs from OpenCV detectors.
-
-If confidence is high enough,
-OpenCV result is accepted.
-
-Otherwise the classifier will
-invoke Hugging Face.
+Combines OpenCV detectors and
+uses AI only when necessary.
 """
 
 
@@ -15,116 +10,151 @@ class DecisionEngine:
 
     def __init__(self):
 
-        self.ai_threshold = 0.75
+        # AI will only be used when
+        # confidence is low.
+        self.ai_threshold = 0.70
 
-    # ---------------------------------------------------------
+    # -----------------------------------------------------
 
     def decide(
+
         self,
-        wallpaper_result,
-        camera_result,
+
         screenshot_result,
-        widget_result=None,
-        document_result=None,
+
+        wallpaper_result
+
     ):
 
-        scores = {
+        screenshot_score = screenshot_result["confidence"]
+        wallpaper_score = wallpaper_result["confidence"]
 
-            "wallpaper": wallpaper_result["confidence"],
+        # -----------------------------------------
+        # Strong Screenshot
+        # -----------------------------------------
 
-            "camera": camera_result["confidence"],
-
-            "screenshot": screenshot_result["confidence"],
-
-            "widget": 0.0,
-
-            "document": 0.0
-
-        }
-
-        # ---------------------------------------
-        # Widget
-        # ---------------------------------------
-
-        if widget_result is not None:
-
-            scores["widget"] = widget_result["confidence"]
-
-        # ---------------------------------------
-        # Document
-        # ---------------------------------------
-
-        if document_result is not None:
-
-            scores["document"] = document_result["confidence"]
-
-        # ---------------------------------------
-        # Highest confidence
-        # ---------------------------------------
-
-        category = max(scores, key=scores.get)
-
-        confidence = scores[category]
-
-        # ---------------------------------------
-        # Should AI be used?
-        # ---------------------------------------
-
-        use_ai = confidence < self.ai_threshold
-
-        return {
-
-            "category": category,
-
-            "confidence": round(confidence, 3),
-
-            "scores": scores,
-
-            "use_ai": use_ai
-
-        }
-
-    # ---------------------------------------------------------
-
-    def merge_ai_result(
-        self,
-        cv_result,
-        ai_result
-    ):
-        """
-        Merge OpenCV result with AI result.
-
-        AI is trusted when OpenCV confidence
-        is below the configured threshold.
-        """
-
-        if not cv_result["use_ai"]:
+        if screenshot_score >= 0.75 and screenshot_score > wallpaper_score:
 
             return {
 
-                "category": cv_result["category"],
+                "category": "screenshot",
 
-                "confidence": cv_result["confidence"],
+                "confidence": screenshot_score,
 
                 "source": "opencv",
 
-                "scores": cv_result["scores"]
+                "use_ai": False,
 
             }
 
+        # -----------------------------------------
+        # Strong Wallpaper
+        # -----------------------------------------
+
+        if wallpaper_score >= 0.75 and wallpaper_score > screenshot_score:
+
+            return {
+
+                "category": "wallpaper",
+
+                "confidence": wallpaper_score,
+
+                "source": "opencv",
+
+                "use_ai": False,
+
+            }
+
+        # -----------------------------------------
+        # Very Close Scores
+        # -----------------------------------------
+
+        difference = abs(
+            screenshot_score -
+            wallpaper_score
+        )
+
+        if difference < 0.20:
+
+            return {
+
+                "category": None,
+
+                "confidence": max(
+                    screenshot_score,
+                    wallpaper_score,
+                ),
+
+                "source": "opencv",
+
+                "use_ai": True,
+
+            }
+
+        # -----------------------------------------
+        # Screenshot Slightly Better
+        # -----------------------------------------
+
+        if screenshot_score > wallpaper_score:
+
+            return {
+
+                "category": "screenshot",
+
+                "confidence": screenshot_score,
+
+                "source": "opencv",
+
+                "use_ai": screenshot_score < self.ai_threshold,
+
+            }
+
+        # -----------------------------------------
+        # Wallpaper Slightly Better
+        # -----------------------------------------
+
         return {
 
-            "category": ai_result["category"],
+            "category": "wallpaper",
 
-            "confidence": ai_result["confidence"],
+            "confidence": wallpaper_score,
 
-            "source": "huggingface",
+            "source": "opencv",
 
-            "prompt": ai_result["prompt"],
-
-            "scores": ai_result["scores"]
+            "use_ai": wallpaper_score < self.ai_threshold,
 
         }
+
+    # -----------------------------------------------------
+
+    def merge_ai_result(
+
+        self,
+
+        cv_result,
+
+        ai_result,
+
+    ):
+
+        """
+        AI overrides OpenCV only if sufficiently confident —
+        UNLESS OpenCV had no opinion at all (category is None,
+        the "very close scores" case). In that case OpenCV
+        never had a real answer to fall back on, so AI's
+        result is used regardless of its confidence; the
+        alternative silently ships a blank/None category.
+        """
+
+        if cv_result.get("category") is None:
+
+            return ai_result
+
+        if ai_result["confidence"] >= 0.90:
+
+            return ai_result
+
+        return cv_result
 
 
 decision_engine = DecisionEngine()
