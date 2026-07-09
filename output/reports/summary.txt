@@ -1,11 +1,11 @@
-total_images: 18
+total_images: 20
 accepted: 11
-rejected: 7
-categories: {'wallpaper': 13, 'screenshot': 4, 'duplicate': 1}
-duplicates: 1
+rejected: 9
+categories: {'duplicate': 2, 'wallpaper': 13, 'screenshot': 5}
+duplicates: 2
 blurry: 4
-noisy: 1
-overexposed: 0
+noisy: 2
+overexposed: 1
 underexposed: 3
-low_resolution: 6
-average_confidence: 0.657
+low_resolution: 7
+average_confidence: 0.948

@@ -26,7 +26,7 @@ class ReportGenerator:
         category,
 
         confidence,
-        
+
         source,
 
         blur,
@@ -39,6 +39,20 @@ class ReportGenerator:
 
         status,
 
+        # Same defaults as logger.py, for the same reason: existing
+        # call sites (corrupted/duplicate/unknown) don't have these.
+        orientation="-",
+
+        scene_type="-",
+
+        has_ui_elements="-",
+
+        wallpaper_suitable="-",
+
+        description="-",
+
+        wallpaper_reason="-",
+
     ):
 
         record = {
@@ -48,7 +62,7 @@ class ReportGenerator:
             "category": category,
 
             "confidence": confidence,
-            
+
             "source": source,
 
             "blur": blur,
@@ -59,7 +73,19 @@ class ReportGenerator:
 
             "resolution": resolution,
 
-            "status": status
+            "status": status,
+
+            "orientation": orientation,
+
+            "scene_type": scene_type,
+
+            "has_ui_elements": has_ui_elements,
+
+            "wallpaper_suitable": wallpaper_suitable,
+
+            "description": description,
+
+            "wallpaper_reason": wallpaper_reason,
 
         }
 

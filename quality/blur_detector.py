@@ -52,8 +52,6 @@ class BlurDetector:
 
     def _load_image(self, image):
 
-        import numpy as np
-
         if isinstance(image, (str, Path)):
 
             image = Image.open(image).convert("RGB")
@@ -125,30 +123,14 @@ class BlurDetector:
 
     # --------------------------------------------------
 
-    def batch_detect(self, image_paths):
-        """
-        Detect blur for multiple images.
-
-        Parameters
-        ----------
-        image_paths : iterable
-
-        Returns
-        -------
-        list
-        """
-
-        results = []
-
-        for image in image_paths:
-
-            result = self.detect(image)
-
-            result["image"] = str(image)
-
-            results.append(result)
-
-        return results
+    # UNUSED
+    # def batch_detect(self, image_paths):
+    #     results = []
+    #     for image in image_paths:
+    #         result = self.detect(image)
+    #         result["image"] = str(image)
+    #         results.append(result)
+    #     return results
 
 
 blur_detector = BlurDetector()

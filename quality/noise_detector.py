@@ -113,19 +113,14 @@ class NoiseDetector:
 
     # --------------------------------------------------
 
-    def batch_detect(self, image_paths):
-
-        results = []
-
-        for image in image_paths:
-
-            result = self.detect(image)
-
-            result["image"] = str(image)
-
-            results.append(result)
-
-        return results
+    # UNUSED
+    # def batch_detect(self, image_paths):
+    #     results = []
+    #     for image in image_paths:
+    #         result = self.detect(image)
+    #         result["image"] = str(image)
+    #         results.append(result)
+    #     return results
 
 
 noise_detector = NoiseDetector()

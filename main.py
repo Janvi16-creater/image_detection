@@ -9,7 +9,6 @@ Workflow:
 4. Generate reports
 """
 
-from cv2 import error
 import traceback
 from config import (
     RAW_DATASET,

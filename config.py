@@ -2,8 +2,30 @@
 Project Configuration
 """
 
+import os
+ 
 from pathlib import Path
-import torch
+ 
+from dotenv import load_dotenv
+ 
+ 
+# -------------------------------------------------
+# Environment / API Keys
+# -------------------------------------------------
+# Loads variables from a .env file in the project root into the
+# process environment. This must run before we read any of them
+# with os.getenv() below.
+ 
+load_dotenv()
+ 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+ 
+if not GEMINI_API_KEY:
+    raise RuntimeError(
+        "GEMINI_API_KEY is not set. Create a .env file in the project "
+        "root (next to this config.py) containing:\n"
+        "    GEMINI_API_KEY=your-api-key-here"
+    )
 
 # -------------------------------------------------
 # Project Root

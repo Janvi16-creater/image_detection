@@ -7,10 +7,46 @@ Every processed image is written to a CSV.
 """
 
 import csv
+import time
+
 from pathlib import Path
 
 
 class ProcessingLogger:
+
+    FIELDNAMES = [
+
+        "filename",
+
+        "category",
+
+        "confidence",
+
+        "source",
+
+        "blur",
+
+        "noise",
+
+        "exposure",
+
+        "resolution",
+
+        "status",
+
+        "orientation",
+
+        "scene_type",
+
+        "has_ui_elements",
+
+        "wallpaper_suitable",
+
+        "description",
+
+        "wallpaper_reason",
+
+    ]
 
     def __init__(
 
@@ -43,25 +79,7 @@ class ProcessingLogger:
 
                 writer = csv.writer(file)
 
-                writer.writerow([
-
-                    "filename",
-
-                    "category",
-
-                    "confidence",
-
-                    "blur",
-
-                    "noise",
-
-                    "exposure",
-
-                    "resolution",
-
-                    "status"
-
-                ])
+                writer.writerow(self.FIELDNAMES)
 
     # --------------------------------------------------
 
@@ -74,7 +92,7 @@ class ProcessingLogger:
         category,
 
         confidence,
-        
+
         source,
 
         blur,
@@ -85,11 +103,25 @@ class ProcessingLogger:
 
         resolution,
 
-        status
+        status,
+
+        # New fields default to "-" so every existing call site
+        # (corrupted/duplicate/unknown branches, which don't have
+        # Gemini's extra detail) keeps working without changes.
+        orientation="-",
+
+        scene_type="-",
+
+        has_ui_elements="-",
+
+        wallpaper_suitable="-",
+
+        description="-",
+
+        wallpaper_reason="-",
 
     ):
 
-        import time
         for attempt in range(5):
             try:
                 with open(
@@ -103,11 +135,18 @@ class ProcessingLogger:
                         filename,
                         category,
                         confidence,
+                        source,
                         blur,
                         noise,
                         exposure,
                         resolution,
-                        status
+                        status,
+                        orientation,
+                        scene_type,
+                        has_ui_elements,
+                        wallpaper_suitable,
+                        description,
+                        wallpaper_reason,
                     ])
                 return
             except PermissionError:

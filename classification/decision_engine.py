@@ -45,6 +45,10 @@ class DecisionEngine:
 
                 "use_ai": False,
 
+                "screenshot_score": screenshot_score,
+
+                "wallpaper_score": wallpaper_score,
+
             }
 
         # -----------------------------------------
@@ -62,6 +66,10 @@ class DecisionEngine:
                 "source": "opencv",
 
                 "use_ai": False,
+
+                "screenshot_score": screenshot_score,
+
+                "wallpaper_score": wallpaper_score,
 
             }
 
@@ -89,6 +97,10 @@ class DecisionEngine:
 
                 "use_ai": True,
 
+                "screenshot_score": screenshot_score,
+
+                "wallpaper_score": wallpaper_score,
+
             }
 
         # -----------------------------------------
@@ -107,6 +119,10 @@ class DecisionEngine:
 
                 "use_ai": screenshot_score < self.ai_threshold,
 
+                "screenshot_score": screenshot_score,
+
+                "wallpaper_score": wallpaper_score,
+
             }
 
         # -----------------------------------------
@@ -123,38 +139,60 @@ class DecisionEngine:
 
             "use_ai": wallpaper_score < self.ai_threshold,
 
+            "screenshot_score": screenshot_score,
+
+            "wallpaper_score": wallpaper_score,
+
         }
 
     # -----------------------------------------------------
 
-    def merge_ai_result(
-
-        self,
-
-        cv_result,
-
-        ai_result,
-
-    ):
-
+    def re_decide(self, cv_result, gemini_result):
         """
-        AI overrides OpenCV only if sufficiently confident —
-        UNLESS OpenCV had no opinion at all (category is None,
-        the "very close scores" case). In that case OpenCV
-        never had a real answer to fall back on, so AI's
-        result is used regardless of its confidence; the
-        alternative silently ships a blank/None category.
+        Re-evaluate using both OpenCV scores and Gemini scene context.
+
+        Gemini's scene understanding (has_ui_elements, scene_type) can
+        override OpenCV when OpenCV was uncertain. Gemini's enriched
+        fields (description, orientation, scene_type, etc.) are always
+        merged into the final result.
+
+        Priority:
+        1. Gemini confidence >= 0.90 → full trust in Gemini
+        2. Gemini says has_ui_elements → screenshot
+        3. Gemini says no UI + natural scene → wallpaper
+        4. Otherwise → keep OpenCV's verdict
         """
+        if gemini_result.get("category") is None:
+            return cv_result
 
-        if cv_result.get("category") is None:
+        if gemini_result.get("confidence", 0) >= 0.90:
+            return gemini_result
 
-            return ai_result
+        result = dict(cv_result)
+        result["source"] = "opencv+gemini"
 
-        if ai_result["confidence"] >= 0.90:
+        if gemini_result.get("has_ui_elements", False):
+            result["category"] = "screenshot"
+            result["confidence"] = round(max(
+                result.get("confidence", 0),
+                gemini_result.get("confidence", 0),
+            ), 3)
 
-            return ai_result
+        elif gemini_result.get("scene_type") in ("photo", "artwork", "abstract"):
+            result["category"] = "wallpaper"
+            result["confidence"] = round(max(
+                result.get("confidence", 0),
+                gemini_result.get("confidence", 0),
+            ), 3)
 
-        return cv_result
+        result["has_ui_elements"] = gemini_result.get("has_ui_elements", False)
+        result["orientation"] = gemini_result.get("orientation", "unknown")
+        result["scene_type"] = gemini_result.get("scene_type", "")
+        result["wallpaper_suitable"] = gemini_result.get("wallpaper_suitable", False)
+        result["wallpaper_reason"] = gemini_result.get("wallpaper_reason", "")
+        result["description"] = gemini_result.get("description", "")
+
+        return result
 
 
 decision_engine = DecisionEngine()

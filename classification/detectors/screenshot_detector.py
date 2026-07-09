@@ -45,7 +45,7 @@ class ScreenshotDetector:
             score += 1
 
         # Home screen icons
-        if f["icon_count"] >= 12:
+        if f["icon_count"] >= 6:
             score += 2
 
         # Widgets
@@ -56,11 +56,26 @@ class ScreenshotDetector:
         if f["grid_score"] > 0.30:
             score += 2
 
-        # Text labels
-        if f["text_regions"] >= 8:
-            score += 1
+        # Text labels — only count toward screenshot if there is
+        # actual UI evidence (icons, widgets, or grid alignment).
+        # Without these, high text_region counts are almost always
+        # image texture (foliage, gravel, fabric, grain) falsely
+        # detected as text — photos with many such blobs are not
+        # screenshots regardless of how many "text regions" exist.
+        has_ui_evidence = (
+            f["icon_count"] > 0
+            or f["widget_count"] > 0
+            or f["grid_score"] > 0.2
+        )
+        if has_ui_evidence:
+            if f["text_regions"] >= 8:
+                score += 1
+            if f["text_regions"] >= 20:
+                score += 1
+            if f["text_regions"] >= 40:
+                score += 1
 
-        max_score = 9  # was 8; +1 for the new top+bottom bonus point
+        max_score = 11
 
         confidence = score / max_score
 

@@ -10,12 +10,13 @@ Responsible for:
 from pathlib import Path
 
 
-def create_directories(*directories):
-    """
-    Create directories if they do not exist.
-    """
-    for directory in directories:
-        Path(directory).mkdir(parents=True, exist_ok=True)
+# UNUSED
+# def create_directories(*directories):
+#     """
+#     Create directories if they do not exist.
+#     """
+#     for directory in directories:
+#         Path(directory).mkdir(parents=True, exist_ok=True)
 
 
 class FolderManager:
@@ -83,6 +84,7 @@ class FolderManager:
         # Special folders
         (self.output_dir / "duplicates").mkdir(exist_ok=True)
         (self.output_dir / "corrupted").mkdir(exist_ok=True)
+        (self.output_dir / "unknown").mkdir(exist_ok=True)
         (self.output_dir / "reports").mkdir(exist_ok=True)
 
     # --------------------------------------------------------
@@ -107,6 +109,7 @@ class FolderManager:
             "duplicate": "duplicates",
             "duplicates": "duplicates",
             "corrupted": "corrupted",
+            "unknown": "unknown",
 
         }
 
@@ -123,12 +126,12 @@ class FolderManager:
 
     # --------------------------------------------------------
 
-    def list_folders(self):
-        """
-        Return dictionary of folders.
-        """
-
-        return self.folders
+    # UNUSED
+    # def list_folders(self):
+    #     """
+    #     Return dictionary of folders.
+    #     """
+    #     return self.folders
 
 
 folder_manager = FolderManager()

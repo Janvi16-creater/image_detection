@@ -1,18 +1,20 @@
-img (1).webp,wallpaper,0.75,extremely_blurry,very_clean,properly_exposed,Low Resolution,Rejected
-img (10).webp,wallpaper,0.75,extremely_blurry,very_clean,underexposed,4K,Rejected
-img (11).webp,wallpaper,0.5,moderately_sharp,very_clean,properly_exposed,Full HD,Accepted
-img (12).webp,wallpaper,0.75,sharp,low_noise,underexposed,2K,Rejected
-img (13).webp,wallpaper,0.273,sharp,low_noise,properly_exposed,2K,Accepted
-img (14).webp,wallpaper,0.6,extremely_blurry,very_clean,properly_exposed,4K,Rejected
-img (15).webp,screenshot,0.842,moderately_sharp,very_clean,properly_exposed,4K,Accepted
-img (16).webp,wallpaper,0.6,sharp,low_noise,properly_exposed,2K,Accepted
-img (17).webp,duplicate,1.0,-,-,-,-,Duplicate
-img (2).webp,wallpaper,0.5,sharp,low_noise,properly_exposed,Low Resolution,Accepted
-img (3).webp,wallpaper,0.6,sharp,very_clean,properly_exposed,Low Resolution,Accepted
-img (4).webp,wallpaper,0.75,extremely_blurry,very_clean,underexposed,4K,Rejected
-img (5).webp,wallpaper,0.681,sharp,low_noise,properly_exposed,HD,Accepted
-img (6).webp,screenshot,0.666,sharp,very_clean,properly_exposed,Low Resolution,Accepted
-img (7).webp,screenshot,0.921,sharp,very_clean,properly_exposed,HD,Accepted
-img (8).webp,screenshot,0.788,sharp,very_clean,properly_exposed,HD,Accepted
-img (9).webp,wallpaper,0.356,sharp,moderate_noise,properly_exposed,Low Resolution,Rejected
-img.webp,wallpaper,0.5,moderately_sharp,very_clean,properly_exposed,Low Resolution,Accepted
+img (17).webp,duplicate,1.0,duplicate_detector,-,-,-,-,Duplicate,-,-,-,-,-,-
+test.jpg,duplicate,1.0,duplicate_detector,-,-,-,-,Duplicate,-,-,-,-,-,-
+img (1).webp,wallpaper,0.75,opencv,extremely_blurry,very_clean,properly_exposed,Low Resolution,Rejected,portrait,abstract,False,True,1080x1426,no_icons; no_status_bar; no_navigation_bar
+img (10).webp,wallpaper,0.75,opencv,extremely_blurry,very_clean,underexposed,4K,Rejected,landscape,abstract,False,True,1080x810,no_icons; no_status_bar; no_navigation_bar
+img (11).webp,screenshot,1.0,gemini,moderately_sharp,very_clean,properly_exposed,Full HD,Accepted,landscape,lock_screen,True,False,An iPad lock screen showing three armed video game characters against a city and mountain backdrop.,"The image contains prominent UI elements such as a large clock, date, status bar, and 'Do Not Disturb' text, making it unsuitable for a wallpaper."
+img (12).webp,wallpaper,0.75,opencv,sharp,low_noise,underexposed,2K,Rejected,landscape,abstract,False,True,1080x720,no_icons; no_status_bar; no_navigation_bar
+img (13).webp,wallpaper,0.95,gemini,sharp,low_noise,properly_exposed,2K,Accepted,landscape,photo,False,True,"A close-up view of a rocky stream with clear, fast-flowing water and sunlight reflecting off the surface.","The image is a clear, natural photograph with good composition and no distracting text, watermarks, or UI elements."
+img (14).webp,wallpaper,1.0,gemini,extremely_blurry,very_clean,properly_exposed,4K,Rejected,landscape,photo,False,True,"A tranquil seascape at sunset featuring a calm blue ocean, a soft sky with scattered clouds, and a faint distant coastline.","The image is a beautiful, uncluttered photograph with a serene natural scene and good visual composition, making it ideal for a wallpaper."
+img (15).webp,wallpaper,1.0,gemini,moderately_sharp,very_clean,properly_exposed,4K,Accepted,landscape,photo,False,True,A natural rock arch over clear blue ocean water with waves breaking on the shore.,"The image is a natural photograph with no text, watermarks, or UI elements, and it has good visual composition."
+img (16).webp,wallpaper,1.0,gemini,sharp,low_noise,properly_exposed,2K,Accepted,landscape,photo,False,True,"A natural landscape showing a forest with gnarled, moss-covered trees and a ground blanketed in fallen autumn leaves.","The image is a clear photograph of a natural scene with no UI elements, text, or watermarks, making it suitable."
+img (2).webp,wallpaper,1.0,gemini,sharp,low_noise,properly_exposed,Low Resolution,Accepted,portrait,photo,False,True,"A majestic rocky mountain stands under a clear blue sky, overlooking golden grassy plains.","The image is a clear, well-composed photograph with no text, watermarks, or UI elements, making it suitable for a wallpaper."
+img (3).webp,wallpaper,1.0,gemini,sharp,very_clean,properly_exposed,Low Resolution,Accepted,portrait,photo,False,True,"A beautiful view of Mount Fuji reflected in a lake, framed by cherry blossoms, under a pink and purple sunset sky.","This is a beautiful, high-quality photograph with excellent composition, no UI elements, no text, and no watermarks, making it ideal for a wallpaper."
+img (4).webp,wallpaper,0.75,opencv,extremely_blurry,very_clean,underexposed,4K,Rejected,landscape,abstract,False,True,1080x713,no_icons; no_status_bar; no_navigation_bar
+img (5).webp,wallpaper,1.0,gemini,sharp,low_noise,properly_exposed,HD,Accepted,portrait,photo,False,True,A dog walks on an overgrown path through dilapidated buildings towards a tall brick chimney under a cloudy sky.,"The image is a clear photograph with no UI elements, text, or watermarks, and has a good visual composition."
+img (6).webp,screenshot,1.0,gemini,sharp,very_clean,properly_exposed,Low Resolution,Accepted,portrait,phone_home_screen,True,False,"A phone home screen displaying widgets for weather, calendar, and fitness, along with multiple app icons.","The image contains numerous UI elements such as a status bar, widgets, and app icons, making it unsuitable for a wallpaper."
+img (7).webp,screenshot,1.0,gemini,sharp,very_clean,properly_exposed,HD,Accepted,portrait,desktop_ui,True,False,"A screenshot of a desktop UI showing a translucent start menu with application shortcuts and a search bar, over a blurred landscape.","This image is not suitable as a wallpaper because it prominently features many user interface elements, including a status bar, an application menu, and a taskbar."
+img (8).webp,screenshot,1.0,gemini,sharp,very_clean,properly_exposed,HD,Accepted,portrait,phone_home_screen,True,False,"A phone home screen displaying a clock, weather widget, app icons, and a status bar over a dark, lake-and-mountain background.","This image contains many UI elements such as a status bar, widgets, and app icons, making it unsuitable for a wallpaper."
+img (9).webp,wallpaper,1.0,gemini,sharp,moderate_noise,properly_exposed,Low Resolution,Rejected,landscape,photo,False,True,"A natural landscape features a dry lakebed with small puddles, autumn trees, and a distant green mountain under a blue sky.","The image is a clear natural landscape with no text, watermarks, or UI elements, making it suitable as a background."
+img.webp,wallpaper,1.0,gemini,moderately_sharp,very_clean,properly_exposed,Low Resolution,Accepted,portrait,photo,False,True,A vibrant natural landscape showing a hillside covered in green trees and yellow flowers reflected in a calm blue lake.,"The image is a clear, high-quality natural landscape with no text, watermarks, or UI elements, making it suitable for a wallpaper."
+Screenshot 2026-07-07 155007.png,screenshot,1.0,gemini,sharp,moderate_noise,overexposed,Low Resolution,Rejected,landscape,browser_page,True,False,A computer screen showing a web browser displaying a multi-page PDF document with a merit list table.,"The image is a screenshot containing browser UI elements, navigation controls, and a detailed text table, making it unsuitable as a wallpaper."
